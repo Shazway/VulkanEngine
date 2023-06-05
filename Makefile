@@ -1,10 +1,13 @@
 NAME		=	vulkanTest
+DEBUG_NAME	=	vulkanDebug
 
-LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
 CFLAGS	=	-std=c++17 -O2
+DEBUG_CFLAGS	=	-DNDEBUG -std=c++17 -O2 -Wall -Wextra -Werror
 
 OBJ_PATH		=	obj/
+DEBUG_OBJ_PATH		=	debug_obj/
 
 CC			=	g++
 SRC_PATH	=	srcs/
@@ -14,6 +17,7 @@ SRC_NAME	=	main.cpp
 
 OBJ_NAME	=	$(SRC_NAME:.cpp=.o)
 OBJ		=	$(addprefix $(OBJ_PATH), $(OBJ_NAME))
+DEBUG_OBJ	=	$(addprefix $(DEBUG_OBJ_PATH), $(OBJ_NAME))
 
 #----------COLORS---------#
 BLACK		=	\033[1;30m
@@ -31,8 +35,9 @@ all: $(NAME)
 
 $(NAME): $(OBJ)
 	@echo "$(RED)=====>Compiling Vulkan Test<===== $(WHITE)"
-	$(CC) $(CFLAGS) $(INCLUDES) $(OBJ) -o $(NAME)  $(LDFLAGS)
+	$(CC) $(CFLAGS) $(INCLUDES) $(OBJ) -o $(NAME) $(LDFLAGS)
 	@echo "$(GREEN)Done ! ✅ $(EOC)"
+
 
 $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp
 	mkdir -p $(@D)
@@ -40,16 +45,32 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp
 
 -include $(OBJ:%.o=%.d)
 
+debug: $(DEBUG_NAME)
+
+$(DEBUG_NAME): $(DEBUG_OBJ)
+	@echo "$(RED)=====>Compiling Vulkan DEBUG<===== $(WHITE)"
+	$(CC) $(DEBUG_CFLAGS) $(INCLUDES) $(DEBUG_OBJ) -o $(DEBUG_NAME) $(LDFLAGS)
+	@echo "$(GREEN)Done ! ✅ $(EOC)"
+
+$(DEBUG_OBJ_PATH)%.o: $(SRC_PATH)%.cpp
+	mkdir -p $(@D)
+	$(CC) $(DEBUG_CFLAGS) $(INCLUDES) -MMD -c $< -o $@
+
+-include $(DEBUG_OBJ:%.o=%.d)
+
 clean:
 	@echo "$(CYAN)♻  Cleaning obj files ♻ $(WHITE)"
 	rm -rf $(OBJ_PATH)
+	rm -rf $(DEBUG_OBJ_PATH)
 	@echo "$(GREEN)Done !✅ $(EOC)"
 
 fclean: clean
 	@echo "$(CYAN)♻  Cleaning executable ♻ $(WHITE)"
 	rm -rf $(NAME)
+	rm -rf $(DEBUG_NAME)
 	@echo "$(GREEN)Done !✅ $(EOC)"
 
 re: fclean all
+re_debug: fclean debug
 
-.PHONY: all clean fclean re
+.PHONY: all debug clean fclean re re_debug

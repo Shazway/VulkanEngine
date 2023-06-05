@@ -7,9 +7,19 @@
 #include <stdexcept>
 #include <cstdlib>
 #include <vector>
-
+#include "Colors.hpp"
 #define W_WIDTH 800
 #define W_HEIGHT 600
+
+const std::vector<const char*> validationLayers = {
+	"VK_LAYER_KHRONOS_validatin"
+};
+
+#ifdef NDEBUG
+#define VALIDATIONLAYER 1
+#else
+#define VALIDATIONLAYER 0
+#endif
 
 class VulkanHelper
 {
@@ -30,6 +40,11 @@ class VulkanHelper
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 			window = glfwCreateWindow(800, 600, "Vulkan", nullptr, nullptr);
+		}
+
+		bool checkValidationLayersupport() {
+			uint32_t	layerCount;
+			
 		}
 
 		void createInstance() {
@@ -58,14 +73,17 @@ class VulkanHelper
 			else if (result == VK_SUCCESS)
 				std::cout << "Successfully created instance" << std::endl;
 
-			uint32_t	extensionCount = 0;
-			vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-			std::vector<VkExtensionProperties>	extensions(extensionCount);
-			vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-			std::cout << "available extensions:\n";
+			uint32_t	extensionsCount = 0;
+			vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr);
+			std::vector<VkExtensionProperties>	extensions(extensionsCount);
+			vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, extensions.data());
+			std::cout << "Available instance extensions:" << std::endl;
 
 			for (std::vector<VkExtensionProperties>::iterator it = extensions.begin(); it != extensions.end(); it++)
-				std::cout << '\t' << (*it).extensionName << std::endl;
+				std::cout << '\t' << C_BLUE << (*it).extensionName << C_END << std::endl;
+			std::cout << C_WHITE << "GLFW extensions: " << C_END << std::endl;
+			for (int i = 0; i < glfwExtensionCount; i++)
+				std::cout << "\t" << C_GREEN << glfWextensions[i] << C_END << std::endl;
 		}
 
 		void initVulkan() {
