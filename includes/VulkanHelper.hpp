@@ -7,12 +7,13 @@
 #include <stdexcept>
 #include <cstdlib>
 #include <vector>
+#include <cstring>
 #include "Colors.hpp"
 #define W_WIDTH 800
 #define W_HEIGHT 600
 
 const std::vector<const char*> validationLayers = {
-	"VK_LAYER_KHRONOS_validatin"
+	"VK_LAYER_KHRONOS_validation"
 };
 
 #ifdef NDEBUG
@@ -44,10 +45,30 @@ class VulkanHelper
 
 		bool checkValidationLayersupport() {
 			uint32_t	layerCount;
-			
+			vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+			std::vector<VkLayerProperties>	availableLayers(layerCount);
+			vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+			for (const char *layerName: validationLayers) {
+				bool layerFound = false;
+
+				for (const VkLayerProperties& layerProperties : availableLayers)
+				{
+					if (strcmp(layerName, layerProperties.layerName) == 0)
+					{
+						layerFound = true;
+						break ;
+					}
+				}
+				if (!layerFound)
+					return false;
+			}
+			return true;
 		}
 
 		void createInstance() {
+			if (VALIDATIONLAYER && !checkValidationLayersupport())
+				throw std::runtime_error("Validation layers requested but not available!");
 			VkApplicationInfo	appInfo {};
 			VkInstanceCreateInfo	createInfo {};
 			uint32_t	glfwExtensionCount = 0;
@@ -82,7 +103,7 @@ class VulkanHelper
 			for (std::vector<VkExtensionProperties>::iterator it = extensions.begin(); it != extensions.end(); it++)
 				std::cout << '\t' << C_BLUE << (*it).extensionName << C_END << std::endl;
 			std::cout << C_WHITE << "GLFW extensions: " << C_END << std::endl;
-			for (int i = 0; i < glfwExtensionCount; i++)
+			for (uint32_t i = 0; i < glfwExtensionCount; i++)
 				std::cout << "\t" << C_GREEN << glfWextensions[i] << C_END << std::endl;
 		}
 
