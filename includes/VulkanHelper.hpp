@@ -27,6 +27,7 @@ class VulkanHelper
 	private:
 		GLFWwindow*	window;
 		VkInstance	instance;
+		VkDebugUtilsMessengerEXT	debugMessenger;
 
 	public: void run() {
 		initWindow();
@@ -41,6 +42,17 @@ class VulkanHelper
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 			window = glfwCreateWindow(800, 600, "Vulkan", nullptr, nullptr);
+		}
+
+		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+			VkDebugUtilsMessageTypeFlagsEXT messageType,
+			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+			void* pUserData)
+		{
+			if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+				std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+			return VK_FALSE;
 		}
 
 		bool checkValidationLayersupport() {
@@ -126,8 +138,12 @@ class VulkanHelper
 				std::cout << "\t" << C_GREEN << (*cit) << C_END << std::endl;
 		}
 
+		//void setupDebugMessenger() {
+		//	if (!VALIDATIONLAYER) return;
+		//}
 		void initVulkan() {
 			createInstance();
+			//setupDebugMessenger();
 		}
 
 		void mainLoop() {
