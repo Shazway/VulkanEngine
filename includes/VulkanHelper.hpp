@@ -53,6 +53,7 @@ private:
 	VkInstance	instance;
 	VkDebugUtilsMessengerEXT	debugMessenger;
 	VkDevice	device;
+	VkQueue	graphicsQueue;
 
 public:
 	void run() {
@@ -227,7 +228,7 @@ private:
 		return false;
 	}
 
-	void pickPhysicalDevice() {
+	VkPhysicalDevice pickPhysicalDevice() {
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -246,16 +247,41 @@ private:
 		}
 		if (physicalDevice == VK_NULL_HANDLE)
 			throw std::runtime_error("failed to find a suitable GPU!");
+		return physicalDevice;
 	}
 
 	void createLogicalDevice() {
-		QueueFamilyIndices indices = findQueueFamilies();
+		VkPhysicalDevice physicalDevice = pickPhysicalDevice();
+		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+		VkDeviceQueueCreateInfo queueCreateInfo {};
+		VkPhysicalDeviceFeatures deviceFeatures{};
+		VkDeviceCreateInfo createInfo {};
+
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+		queueCreateInfo.queueCount = 1;
+		float queuePriority = 1.0f;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+
+		createInfo.pQueueCreateInfos = &queueCreateInfo;
+		createInfo.queueCreateInfoCount = 1;
+		createInfo.pEnabledFeatures = &deviceFeatures;
+		createInfo.enabledExtensionCount = 0;
+		
+		if (VALIDATIONLAYER) {
+			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+			createInfo.ppEnabledLayerNames = validationLayers.data();
+		}
+		else
+			createInfo.enabledLayerCount = 0;
+		
+		if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
+			throw std::runtime_error("failed to create logical device !");
 	}
 
 	void initVulkan() {
 		createInstance();
 		setupDebugMessenger();
-		pickPhysicalDevice();
 		createLogicalDevice();
 	}
 
@@ -268,6 +294,7 @@ private:
 	void cleanup() {
 		if (VALIDATIONLAYER)
 			DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+		vkDestroyDevice(device, nullptr);
 		vkDestroyInstance(instance, nullptr);
 
 		glfwDestroyWindow(window);
