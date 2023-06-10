@@ -19,6 +19,10 @@ const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
 
+const std::vector<const char *> deviceExtensions = {
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
 #ifdef NDEBUG
 #define VALIDATIONLAYER 1
 #else
@@ -88,6 +92,22 @@ private:
 		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 			std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 		return VK_FALSE;
+	}
+
+	bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+		uint32_t extensionCount;
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+		std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+		for (const auto& extension : availableExtensions) {
+			requiredExtensions.erase(extension.extensionName);
+		}
+
+		return requiredExtensions.empty();
 	}
 
 	bool checkValidationLayersupport() {
@@ -234,9 +254,10 @@ private:
 				deviceFeatures.geometryShader)
 		{
 			QueueFamilyIndices indices = findQueueFamilies(device);
+			bool extensionsSupported = checkDeviceExtensionSupport(device);
 			std::cout << C_WHITE << "Selected physical device: " << C_END << std::endl;
 			std::cout << C_WHITE << deviceProperties.deviceName << C_END << std::endl;
-			return indices.isComplete();
+			return indices.isComplete() && extensionsSupported;
 		}
 		return false;
 	}
@@ -278,7 +299,6 @@ private:
 			queueCreateInfo.queueCount = 1;
 			queueCreateInfo.pQueuePriorities = &queuePriority;
 			queueCreateInfos.push_back(queueCreateInfo);
-			
 		}
 
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
