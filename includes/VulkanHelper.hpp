@@ -1,5 +1,5 @@
-#ifndef HELLOTRIANGLEAPPLICATION_HPP
-#define HELLOTRIANGLEAPPLICATION_HPP
+#ifndef VULKANHELPER
+#define VULKANHELPER
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -52,6 +52,7 @@ private:
 	GLFWwindow*	window;
 	VkInstance	instance;
 	VkDebugUtilsMessengerEXT	debugMessenger;
+	VkPhysicalDevice	physicalDevice = VK_NULL_HANDLE;
 	VkDevice	device;
 	VkQueue	graphicsQueue;
 
@@ -228,10 +229,9 @@ private:
 		return false;
 	}
 
-	VkPhysicalDevice pickPhysicalDevice() {
+	void pickPhysicalDevice() {
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
 		if (deviceCount == 0)
 			throw std::runtime_error("failed to find GPUs with Vulkan support!");
@@ -247,22 +247,21 @@ private:
 		}
 		if (physicalDevice == VK_NULL_HANDLE)
 			throw std::runtime_error("failed to find a suitable GPU!");
-		return physicalDevice;
 	}
 
 	void createLogicalDevice() {
-		VkPhysicalDevice physicalDevice = pickPhysicalDevice();
 		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 		VkDeviceQueueCreateInfo queueCreateInfo {};
 		VkPhysicalDeviceFeatures deviceFeatures{};
 		VkDeviceCreateInfo createInfo {};
+		float queuePriority = 1.0f;
 
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
 		queueCreateInfo.queueCount = 1;
-		float queuePriority = 1.0f;
 		queueCreateInfo.pQueuePriorities = &queuePriority;
 
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		createInfo.pQueueCreateInfos = &queueCreateInfo;
 		createInfo.queueCreateInfoCount = 1;
 		createInfo.pEnabledFeatures = &deviceFeatures;
@@ -277,11 +276,13 @@ private:
 		
 		if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 			throw std::runtime_error("failed to create logical device !");
+		vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	}
 
 	void initVulkan() {
 		createInstance();
 		setupDebugMessenger();
+		pickPhysicalDevice();
 		createLogicalDevice();
 	}
 
@@ -292,9 +293,9 @@ private:
 	}
 
 	void cleanup() {
+		vkDestroyDevice(device, nullptr);
 		if (VALIDATIONLAYER)
 			DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-		vkDestroyDevice(device, nullptr);
 		vkDestroyInstance(instance, nullptr);
 
 		glfwDestroyWindow(window);
