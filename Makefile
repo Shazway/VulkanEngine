@@ -4,7 +4,7 @@ DEBUG_NAME	=	vulkanDebug
 LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
 CFLAGS	=	-std=c++17 -O2 -g3
-DEBUG_CFLAGS	=	-DNDEBUG -std=c++17 -O2 -Wall -Wextra -Werror -g3
+DEBUG_CFLAGS	=	-DNDEBUG -std=c++17 -O2 -g3
 
 OBJ_PATH		=	obj/
 DEBUG_OBJ_PATH		=	debug_obj/

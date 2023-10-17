@@ -9,6 +9,7 @@
 #define VALIDATIONLAYER 0
 #endif
 
+//External includes
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -20,6 +21,7 @@
 #include <cstdint>
 #include <limits>
 #include <algorithm>
+#include <fstream>
 
 
 #define W_WIDTH 800
