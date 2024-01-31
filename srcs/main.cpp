@@ -1,4 +1,4 @@
-#include "../includes/VulkanHelper.hpp"
+#include "../includes/vulkanHelper.hpp"
 #include "../includes/Colors.hpp"
 int main()
 {

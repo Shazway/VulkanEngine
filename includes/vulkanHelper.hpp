@@ -2,7 +2,7 @@
 #define VULKANHELPER_HPP
 
 #include "Colors.hpp"
-#include "VulkanFunctions.hpp"
+#include "utils.hpp"
 
 class VulkanHelper
 {

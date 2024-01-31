@@ -1,7 +1,7 @@
-#ifndef VULKANFUNCTIONS_HPP
-#define VULKANFUNCTIONS_HPP
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
-#include "VulkanStructs.hpp"
+#include "vulkanStructs.hpp"
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
 	auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
